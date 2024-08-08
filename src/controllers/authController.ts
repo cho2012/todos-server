@@ -5,11 +5,12 @@ import { redisClient } from "../redisClient";
 
 const registerUser = async (req: Request, res: Response) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, photoUrl } = req.body;
     const user = new User();
     user.name = name;
     user.email = email;
     user.password = password;
+    user.photoUrl = photoUrl;
 
     await user.save();
 
@@ -40,13 +41,9 @@ const loginUser = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Invalid eamil or password" });
     }
 
-    const token = jwt.sign(
-      { id: user.id },
-      "f-f-g-g-s-d-d-fg-fgh--sds-r-e-ds-g-sgds-gw--asdg-hfshsd-g-s-dh342q41-xasgsd",
-      {
-        expiresIn: "1h",
-      }
-    );
+    const token = jwt.sign({ id: user.id }, "f-f-g-g-s-d", {
+      expiresIn: "1h",
+    });
 
     return res.json({ token });
   } catch (error) {
@@ -56,19 +53,20 @@ const loginUser = async (req: Request, res: Response) => {
 };
 
 const logoutUser = async (req: Request, res: Response) => {
-  const token = req.header("Authorization")?.replace("Bearer", "");
+  const token = req.header("Authorization")?.replace("Bearer ", "");
 
   if (token) {
     try {
       await redisClient.set(token, "blacklisted");
-      await redisClient.expire(token, 3600);
+      await redisClient.expire(token, 3600); // 1시간 후 만료
       res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
-      console.error("Redis error", error);
+      console.error("Redis error:", error);
       res.status(500).json({ message: "Error logging out", error });
     }
   } else {
     res.status(400).json({ message: "No token provided" });
   }
 };
+
 export { registerUser, loginUser, logoutUser };

@@ -3,8 +3,10 @@ import authRouter from "./routes/authRouter";
 import AppDataSource from "./data-source";
 import { authenticateUser } from "./middleWare/authenticateUser";
 import { connectRedis } from "./redisClient";
+const cors = require("cors");
 
 const app = express();
+app.use(cors());
 const port = process.env.PORT || 8000;
 
 // 데이터베이스 연결
@@ -25,7 +27,7 @@ connectRedis()
   });
 
 app.get("/protected", authenticateUser, (req, res) => {
-  res.json({ message: `Welcome user with ID ${req.user?.id}` });
+  res.json(req.user);
 });
 
 app.use(express.json());
