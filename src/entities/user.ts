@@ -24,6 +24,15 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   photoUrl: string;
 
+  @Column({ nullable: true })
+  photobase64: string;
+
+  @Column({ nullable: true })
+  address: string;
+
+  @Column({ nullable: true })
+  studentNum: string;
+
   @BeforeInsert()
   async hashPassword() {
     const salt = await bcrypt.genSalt(10);

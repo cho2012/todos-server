@@ -4,13 +4,15 @@ import jwt from "jsonwebtoken";
 import { redisClient } from "../redisClient";
 
 const registerUser = async (req: Request, res: Response) => {
+  const { name, email, password, photoUrl, address, studentNum } = req.body;
   try {
-    const { name, email, password, photoUrl } = req.body;
     const user = new User();
     user.name = name;
     user.email = email;
     user.password = password;
     user.photoUrl = photoUrl;
+    user.address = address;
+    user.studentNum = studentNum;
 
     await user.save();
 
@@ -45,6 +47,9 @@ const loginUser = async (req: Request, res: Response) => {
       expiresIn: "1h",
     });
 
+    await redisClient.set(token, user.id.toString(), {
+      EX: 60 * 60, // 1시간 토큰의 유효기간
+    });
     return res.json({ token });
   } catch (error) {
     console.error(error);
